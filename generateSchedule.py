@@ -1,4 +1,3 @@
-import schedule
 import time
 from readFile import getTimeSchedule
 
