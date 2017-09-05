@@ -79,6 +79,8 @@ if __name__ == '__main__':
 	global button2 
 	global button3
 
+	multiprocessing.freeze_support()
+
 	root = Tk()
 	root.title("Week schedule")
 
