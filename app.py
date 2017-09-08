@@ -8,122 +8,107 @@ from job import job
 from generateSchedule import addToSchedule
 import schedule
 
-timetable = getTimeSchedule()
+def runScheduler(timetable):
+    addToSchedule(schedule, job, timetable)
+    while True:
+        sleep(1)
+        schedule.run_pending()
 
-def onClosing():
-    global process
-    process.terminate()
-    process.join()
-    root.destroy()
+class UI:
+    def __init__(self):
+        # needed because windows doesn't implament fork()
+        multiprocessing.freeze_support()
 
-def runScheduler():
-	addToSchedule(schedule, job, timetable)
-	while True:
-		sleep(1)
-		schedule.run_pending()
+        self.timetable = getTimeSchedule()
+        self.root = Tk()
+        self.mainframe = ttk.Frame(self.root, padding="3 3 12 12")
+        self.column = len(self.timetable)
+        self.row = len(self.timetable[0])
+        self.entry = [[0 for x in range(0, self.column)] for y in range(0, self.row)] 
+        self.process = multiprocessing.Process(target=runScheduler,  args=(self.timetable,))
+        self.button1 = ttk.Button(self.mainframe, text="Update table", command=self.updateTable)
+        self.button2 = ttk.Button(self.mainframe, text="Add row", command=self.addRow)
+        self.button3 = ttk.Button(self.mainframe, text="Ring bell", command=job)
 
-def run():
-	p = multiprocessing.Process(target=runScheduler)
-	return p
+    def onClosing(self):
+        self.root.destroy()
+        self.process.terminate()
+        self.process.join()
+
+    def addRow(self):
+        m = [0 for x in range(0, self.column)]
+        for i in range(0, self.column):
+            m[i] = ttk.Entry(self.mainframe, width=10)
+            m[i].insert(i, '')
+            m[i].grid(column=i, row=self.row+1, sticky=(W, E))
+            m[i].grid_configure(padx=5, pady=5)
+        
+        self.row = self.row + 1
+        self.entry.append(m)
+        self.button1.grid(column=0, row=self.row+1, sticky=W)
+        self.button2.grid(column=1, row=self.row+1, sticky=W)
+        self.button3.grid(column=2, row=self.row+1, sticky=W)
+
+    def updateTable(self):
+        self.process.terminate()
+        self.process.join()
+
+        newSchedule = [[0 for x in range(0, self.column)] for y in range(0, self.row)] 
+        
+        for i in range(0, self.column):
+            for j in range(0, self.row):
+                newSchedule[j][i] = self.entry[j][i].get()
+        
+        with open("schedule.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerows(newSchedule)
+
+        self.timetable = getTimeSchedule()
+        self.process = multiprocessing.Process(target=runScheduler, args=(self.timetable,))
+        self.process.start()
 
 
 
-def addRow(*args):
-	global row
+    def setUpUI(self):
+        self.root.title("Week schedule")
 
-	m = [0 for x in range(0, column)]
-	for i in range(0, column):
-		m[i] = ttk.Entry(mainframe, width=10)
-		m[i].insert(i, '')
-		m[i].grid(column=i, row=row+1, sticky=(W, E))
-		m[i].grid_configure(padx=5, pady=5)
-	
-	row = row + 1
-	entry.append(m)
-	button1.grid(column=0, row=row+1, sticky=W)
-	button2.grid(column=1, row=row+1, sticky=W)
-	button3.grid(column=2, row=row+1, sticky=W)
+        self.mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
+        self.mainframe.columnconfigure(0, weight=1)
+        self.mainframe.rowconfigure(0, weight=1)
 
-def readData(*args):
-	global row
-	global timetable
-	global process
+        Label(self.mainframe, text='ponedelnik').grid(row=0, column=0)
+        Label(self.mainframe, text='vtornik').grid(row=0, column=1)
+        Label(self.mainframe, text='srqda').grid(row=0, column=2)
+        Label(self.mainframe, text='chetvartak').grid(row=0, column=3)
+        Label(self.mainframe, text='petak').grid(row=0, column=4)
+        Label(self.mainframe, text='sabota').grid(row=0, column=5)
 
-	process.terminate()
-	process.join()
+        for i in range(0, self.column):
+            for j in range(0, self.row):
+                string = str(self.timetable[i][j])
+                if string == 'nan':
+                    string = ''
+                self.entry[j][i] = ttk.Entry(self.mainframe, width=10)
+                self.entry[j][i].insert(i, string)
+                self.entry[j][i].grid(column=i, row=j+1, sticky=(W, E))
+                        
+        self.button1.grid(column=0, row=self.row+1, sticky=W)
+        self.button2.grid(column=1, row=self.row+1, sticky=W)
+        self.button3.grid(column=2, row=self.row+1, sticky=W)
 
-	con = False
-	newSchedule = [[0 for x in range(0, column)] for y in range(0, row)] 
-	
-	for i in range(0, column):
-		for j in range(0, row):
-			newSchedule[j][i] = entry[j][i].get()
-	
-	with open("schedule.csv", "w") as f:
-		writer = csv.writer(f)
-		writer.writerows(newSchedule)
+        for child in self.mainframe.winfo_children(): child.grid_configure(padx=5, pady=5)
 
-	timetable = getTimeSchedule()
-	process = run()
-	process.start()
+        self.root.bind('<Return>', self.updateTable)
+        self.root.bind('<Return>', self.addRow) 
+        self.root.protocol("WM_DELETE_WINDOW", self.onClosing)   
+            
+        # self.process = multiprocessing.Process(target=self.runScheduler)
 
+    def run(self):
+        self.process.start()
+        self.root.mainloop()
 
 if __name__ == '__main__':
-	global root
-	global mainframe
-	global column
-	global row
-	global entry
-	global process
-	global button1
-	global button2 
-	global button3
-
-	multiprocessing.freeze_support()
-
-	root = Tk()
-	root.title("Week schedule")
-
-	mainframe = ttk.Frame(root, padding="3 3 12 12")
-	mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-	mainframe.columnconfigure(0, weight=1)
-	mainframe.rowconfigure(0, weight=1)
-
-	column = len(timetable)
-	row = len(timetable[0])
-	entry = [[0 for x in range(0, column)] for y in range(0, row)] 
-
-	process = multiprocessing.Process(target=runScheduler)
-
-	button1 = ttk.Button(mainframe, text="Update table", command=readData)
-	button2 = ttk.Button(mainframe, text="Add row", command=addRow)
-	button3 = ttk.Button(mainframe, text="Ring bell", command=job)
-
-	Label(mainframe, text='ponedelnik').grid(row=0, column=0)
-	Label(mainframe, text='vtornik').grid(row=0, column=1)
-	Label(mainframe, text='srqda').grid(row=0, column=2)
-	Label(mainframe, text='chetvartak').grid(row=0, column=3)
-	Label(mainframe, text='petak').grid(row=0, column=4)
-	Label(mainframe, text='sabota').grid(row=0, column=5)
-
-	for i in range(0, column):
-		for j in range(0, row):
-			string = str(timetable[i][j])
-			if string == 'nan':
-				string = ''
-			entry[j][i] = ttk.Entry(mainframe, width=10)
-			entry[j][i].insert(i, string)
-			entry[j][i].grid(column=i, row=j+1, sticky=(W, E))
-					
-	button1.grid(column=0, row=row+1, sticky=W)
-	button2.grid(column=1, row=row+1, sticky=W)
-	button3.grid(column=2, row=row+1, sticky=W)
-
-	for child in mainframe.winfo_children(): child.grid_configure(padx=5, pady=5)
-
-	root.bind('<Return>', readData)
-	root.bind('<Return>', addRow) 
-	root.protocol("WM_DELETE_WINDOW", onClosing)   
-		
-	process.start()
-	root.mainloop()
+    ui = UI()
+    ui.setUpUI()
+    ui.run()
