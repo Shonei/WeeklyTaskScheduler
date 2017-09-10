@@ -12,6 +12,8 @@ def getTimeSchedule():
 	dateList.append(data.Petak)
 	dateList.append(data.Sabota)
 
+	# print(dateList)
+
 	return dateList
 
-# print(getTimeSchedule())
+getTimeSchedule()
