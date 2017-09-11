@@ -2,12 +2,12 @@ import sys
 from cx_Freeze import setup, Executable
 import os
 
-os.environ['TCL_LIBRARY'] = "C:\\Users\\Teodor\\AppData\\Local\\Programs\\Python\\Python35\\tcl\\tcl8.6"
-os.environ['TK_LIBRARY'] = "C:\\Users\\Teodor\\AppData\\Local\\Programs\\Python\\Python35\\tcl\\tk8.6"
+os.environ['TCL_LIBRARY'] = "C:\\Users\\Teodor\\AppData\\Local\\Programs\\Python\\Python35-32\\tcl\\tcl8.6"
+os.environ['TK_LIBRARY'] = "C:\\Users\\Teodor\\AppData\\Local\\Programs\\Python\\Python35-32\\tcl\\tk8.6"
 
 Packages = []
 
-build_exe_options = {"includes": ["tkinter"], "packages": ["numpy"], "include_files": ["C:\\Users\\Teodor\\AppData\\Local\\Programs\\Python\\Python35\\DLLs\\tcl86t.dll", "C:\\Users\\Teodor\\AppData\\Local\\Programs\\Python\\Python35\\DLLs\\tk86t.dll", "schedule.csv", "ringTone.mp3"]}
+build_exe_options = {"includes": ["tkinter"], "packages": ["numpy"], "include_files": ["C:\\Users\\Teodor\\AppData\\Local\\Programs\\Python\\Python35-32\\DLLs\\tcl86t.dll", "C:\\Users\\Teodor\\AppData\\Local\\Programs\\Python\\Python35-32\\DLLs\\tk86t.dll", "schedule.csv", "ringTone.mp3"]}
 
 exe = Executable(
    script="app.py",

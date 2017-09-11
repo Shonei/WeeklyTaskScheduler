@@ -1,8 +1,11 @@
 import pandas
 
-def getTimeSchedule():
+def getTimeSchedule(callback):
 	colnames = ['Ponedelnik', 'Vtornik', 'Srqda', 'Chetvartak', 'Petak', 'Sabota']
-	data = pandas.read_csv('schedule.csv', names=colnames)
+	try:
+		data = pandas.read_csv('schedule.csv', names=colnames)
+	except:
+		callback("File missing", "The schedulle.csv is missing from the root directory.")
 
 	dateList = []
 	dateList.append(data.Ponedelnik)
@@ -16,4 +19,4 @@ def getTimeSchedule():
 
 	return dateList
 
-getTimeSchedule()
+# getTimeSchedule()

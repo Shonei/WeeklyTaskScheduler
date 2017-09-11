@@ -33,4 +33,3 @@ def addToSchedule(sched, job, timetable):
 			# skip nan values
 			if timetable[i][j] == timetable[i][j]:
 				times[i](sched, timetable[i][j], job)
-
